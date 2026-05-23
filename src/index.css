@@ -1,0 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Nunito:wght@300..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Nunito", sans-serif;
+  --font-display: "Fredoka", sans-serif;
+  --color-brand-blue: #3A86FF;
+  --color-brand-blue-medium: #00B4D8;
+  --color-brand-blue-light: #E0F2FE;
+  --color-brand-gold: #FFB703;
+  --color-brand-gold-dark: #FB8500;
+  --color-brand-gold-light: #FEF9E7;
+  --color-brand-pink: #FF006E;
+  --color-brand-green: #38B000;
+  --color-brand-purple: #8338EC;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    background-color: #F8FAFC;
+    color: #334155;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+}
+
+/* Custom Scrollbar for modern feel */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #FEF9E7;
+}
+::-webkit-scrollbar-thumb {
+  background: #FFB703;
+  border-radius: 10px;
+  border: 2px solid #FEF9E7;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FB8500;
+}
+
+/* Fun Bubble & Wiggle Keyframes */
+@keyframes bubble {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-8px) scale(1.05); }
+}
+
+@keyframes float-cloud {
+  0% { transform: translateX(-10%); }
+  50% { transform: translateX(10%); }
+  100% { transform: translateX(-10%); }
+}
+
+.animate-bouncy-slow {
+  animation: bubble 4s ease-in-out infinite;
+}
+
+.animate-cloud {
+  animation: float-cloud 12s ease-in-out infinite;
+}
+

@@ -1,0 +1,121 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net (Rule Block #1)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Hardened Global Helpers (ABAC / Zero-Trust Architecture)
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Checking system admin privilege with email claims validation (Zero Spoofing)
+    function isSystemAdmin() {
+      return isSignedIn() && 
+             request.auth.token.email_verified == true && 
+             (request.auth.token.email == 'frezafa20@gmail.com' || exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+    }
+
+    // Schema Validation Helpers
+    function isValidApplicant(data) {
+      return data.id is string && data.id.size() <= 64
+          && data.namaLengkap is string && data.namaLengkap.size() <= 128
+          && data.jenisKelamin is string && (data.jenisKelamin == 'Laki-laki' || data.jenisKelamin == 'Perempuan')
+          && data.tempatLahir is string && data.tempatLahir.size() <= 128
+          && data.tanggalLahir is string && data.tanggalLahir.size() <= 32
+          && data.alamat is string && data.alamat.size() <= 512
+          && data.sekolahAsal is string && data.sekolahAsal.size() <= 128
+          && data.namaAyah is string && data.namaAyah.size() <= 128
+          && data.namaIbu is string && data.namaIbu.size() <= 128
+          && data.pekerjaanOrangTua is string && data.pekerjaanOrangTua.size() <= 128
+          && data.nomorHpOrtu is string && data.nomorHpOrtu.size() <= 32
+          && data.emailOrtu is string && data.emailOrtu.size() <= 128
+          && data.alamatOrtu is string && data.alamatOrtu.size() <= 512
+          && data.programPilihan is string && (data.programPilihan == 'SMA' || data.programPilihan == 'Perguruan Tinggi')
+          && data.jurusanPilihan is string && data.jurusanPilihan.size() <= 128
+          && data.status is string && (data.status == 'Pending' || data.status == 'Diterima' || data.status == 'Ditolak' || data.status == 'Revisi')
+          && data.tanggalDaftar is string && data.tanggalDaftar.size() <= 32;
+    }
+
+    function isValidNews(data) {
+      return data.id is string && data.id.size() <= 64
+          && data.judul is string && data.judul.size() <= 256
+          && data.kategori is string && (data.kategori == 'Pengumuman' || data.kategori == 'Prestasi' || data.kategori == 'Kegiatan' || data.kategori == 'Akademik')
+          && data.konten is string && data.konten.size() <= 10000
+          && data.ringkasan is string && data.ringkasan.size() <= 512
+          && data.tanggal is string && data.tanggal.size() <= 32
+          && data.gambar is string && data.gambar.size() <= 512;
+    }
+
+    function isValidGallery(data) {
+      return data.id is string && data.id.size() <= 64
+          && data.judul is string && data.judul.size() <= 256
+          && data.kategori is string && (data.kategori == 'SMA' || data.kategori == 'Perguruan Tinggi' || data.kategori == 'Kegiatan' || data.kategori == 'Fasilitas')
+          && data.url is string && data.url.size() <= 512
+          && data.tipe is string && (data.tipe == 'foto' || data.tipe == 'video');
+    }
+
+    function isValidProfile(data) {
+      return data.visi is string && data.visi.size() <= 1000
+          && data.sejarah is string && data.sejarah.size() <= 10000
+          && data.misi is list && data.misi.size() <= 20;
+    }
+
+    // 1. Applicants Security Rules (PII Protection & Audit Compliance)
+    match /applicants/{applicantId} {
+      allow get: if isValidId(applicantId);
+      allow list: if isSystemAdmin();
+      allow create: if isValidId(applicantId) && isValidApplicant(incoming()) && incoming().status == 'Pending';
+      allow delete: if isValidId(applicantId) && isSystemAdmin();
+      allow update: if isValidId(applicantId) && isValidApplicant(incoming()) && (
+        isSystemAdmin() || 
+        (incoming().ownerId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['namaLengkap', 'alamat', 'nomorHpSiswa', 'nomorHpOrtu', 'emailOrtu', 'alamatOrtu']))
+      );
+    }
+
+    // 2. News/CMS Collection Security Rules
+    match /news/{newsId} {
+      allow read, get: if isValidId(newsId);
+      allow list: if true;
+      allow create, update: if isValidId(newsId) && isValidNews(incoming()) && isSystemAdmin();
+      allow delete: if isValidId(newsId) && isSystemAdmin();
+    }
+
+    // 3. Gallery Collection Security Rules
+    match /gallery/{galleryId} {
+      allow read, get: if isValidId(galleryId);
+      allow list: if true;
+      allow create, update: if isValidId(galleryId) && isValidGallery(incoming()) && isSystemAdmin();
+      allow delete: if isValidId(galleryId) && isSystemAdmin();
+    }
+
+    // 4. Foundation Profile Document Security Rules (Yayasan CMS)
+    match /profile/{profileId} {
+      allow read, get: if isValidId(profileId);
+      allow list: if true;
+      allow create, update: if isValidId(profileId) && isValidProfile(incoming()) && isSystemAdmin();
+      allow delete: if isValidId(profileId) && isSystemAdmin();
+    }
+
+    // 5. Adms Configuration Document for Admin Registries
+    match /admins/{adminId} {
+      allow read, get: if isValidId(adminId) && isSignedIn();
+      allow write: if false; // System static list only configurable in Cloud Console
+    }
+  }
+}

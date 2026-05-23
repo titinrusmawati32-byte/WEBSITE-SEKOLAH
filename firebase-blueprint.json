@@ -1,0 +1,60 @@
+{
+  "entities": {
+    "applicant": {
+      "title": "Pendaftar",
+      "description": "Model data untuk pendaftar / calon murid baru",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "ID Pendaftaran" },
+        "namaLengkap": { "type": "string", "description": "Nama lengkap calon murid" },
+        "jenisKelamin": { "type": "string", "enum": ["Laki-laki", "Perempuan"], "description": "Jenis kelamin" },
+        "tempatLahir": { "type": "string", "description": "Tempat lahir" },
+        "tanggalLahir": { "type": "string", "description": "Tanggal lahir" },
+        "alamat": { "type": "string", "description": "Alamat tempat tinggal" },
+        "sekolahAsal": { "type": "string", "description": "Sekolah asal / PAUD / TK" },
+        "nomorHpSiswa": { "type": "string", "description": "Nomor HP siswa (opsional)" },
+        "namaAyah": { "type": "string", "description": "Nama ayah" },
+        "namaIbu": { "type": "string", "description": "Nama ibu" },
+        "pekerjaanOrangTua": { "type": "string", "description": "Pekerjaan orang tua" },
+        "nomorHpOrtu": { "type": "string", "description": "Nomor HP orang tua" },
+        "emailOrtu": { "type": "string", "description": "Email orang tua" },
+        "alamatOrtu": { "type": "string", "description": "Alamat orang tua" },
+        "programPilihan": { "type": "string", "enum": ["SMA", "Perguruan Tinggi"], "description": "Program pilihan" },
+        "jurusanPilihan": { "type": "string", "description": "Nama jurusan / fase kelas" },
+        "catatanTambahan": { "type": "string", "description": "Catatan tambahan" },
+        "dokumen": {
+          "type": "object",
+          "description": "Dokumen lampiran pendaftaran"
+        },
+        "status": { "type": "string", "enum": ["Pending", "Diterima", "Ditolak", "Revisi"], "description": "Status kelulusan" },
+        "catatanStatus": { "type": "string", "description": "Catatan status kelulusan dari admin" },
+        "tanggalDaftar": { "type": "string", "description": "Tanggal daftar" }
+      },
+      "required": [
+        "id",
+        "namaLengkap",
+        "jenisKelamin",
+        "tempatLahir",
+        "tanggalLahir",
+        "alamat",
+        "sekolahAsal",
+        "namaAyah",
+        "namaIbu",
+        "pekerjaanOrangTua",
+        "nomorHpOrtu",
+        "emailOrtu",
+        "alamatOrtu",
+        "programPilihan",
+        "jurusanPilihan",
+        "status",
+        "tanggalDaftar"
+      ]
+    }
+  },
+  "firestore": {
+    "/applicants/{applicantId}": {
+      "schema": "applicant",
+      "description": "Koleksi data pendaftaran murid baru"
+    }
+  }
+}

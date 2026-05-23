@@ -1,0 +1,6 @@
+{
+  "name": "Yayasan Pendidikan Nusantara",
+  "description": "Website resmi Yayasan Pendidikan Nusantara, menyajikan profil lembaga, program pendidikan SMA & Perguruan Tinggi, pendaftaran online multi-step, serta panel admin manajemen pendaftar dan konten.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
